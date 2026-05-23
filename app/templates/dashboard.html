@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zaiper — Dashboard</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0f0f0f;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 40px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        .sync-btn {
+            padding: 10px 24px;
+            background: #ffffff;
+            color: #000000;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .sync-btn:hover {
+            background: #e0e0e0;
+        }
+        .stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+        .stat-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 20px 28px;
+            flex: 1;
+        }
+        .stat-card h3 {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+        .stat-card p {
+            font-size: 28px;
+            font-weight: 700;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1a1a1a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        thead {
+            background: #222;
+        }
+        th {
+            text-align: left;
+            padding: 14px 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        td {
+            padding: 14px 20px;
+            font-size: 14px;
+            border-top: 1px solid #2a2a2a;
+            color: #ddd;
+        }
+        tr:hover td {
+            background: #222;
+        }
+        .status {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #2a2a2a;
+            color: #aaa;
+        }
+        .empty {
+            text-align: center;
+            padding: 60px;
+            color: #555;
+            font-size: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Zaiper Dashboard</h1>
+        <form action="/sync" method="POST">
+            <button class="sync-btn" type="submit">↻ Sync Now</button>
+        </form>
+    </div>
+
+    <div class="stats">
+        <div class="stat-card">
+            <h3>Total Assignments</h3>
+            <p>{{ assignments | length }}</p>
+        </div>
+        <div class="stat-card">
+            <h3>Courses</h3>
+            <p>{{ assignments | map(attribute='course_name') | list | unique | list | length }}</p>
+        </div>
+    </div>
+
+    {% if assignments %}
+    <table>
+        <thead>
+            <tr>
+                <th>Assignment</th>
+                <th>Course</th>
+                <th>Due Date</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in assignments %}
+            <tr>
+                <td>{{ a.assignment_name }}</td>
+                <td>{{ a.course_name }}</td>
+                <td>{{ a.due_date if a.due_date else "No due date" }}</td>
+                <td><span class="status">{{ a.status }}</span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="empty">No assignments found. Try syncing again.</div>
+    {% endif %}
+</body>
+</html>
