@@ -1,10 +1,8 @@
-Open it in VS Code and paste this in:
 flask
 gunicorn
 requests
 notion-client==1.0.0
 python-dotenv
 apscheduler
-moviepy==1.0.3
 pillow
 numpy
