@@ -1,16 +1,8 @@
-import os
 from notion_client import Client
-from dotenv import load_dotenv
 
-load_dotenv()
-
-NOTION_TOKEN = os.getenv("NOTION_TOKEN")
-NOTION_DATABASE_ID = os.getenv("NOTION_DATABASE_ID")
-
-notion = Client(auth=NOTION_TOKEN)
-
-def get_existing_assignments():
-    results = notion.databases.query(NOTION_DATABASE_ID)
+def get_existing_assignments(notion_token, notion_database_id):
+    notion = Client(auth=notion_token)
+    results = notion.databases.query(notion_database_id)
     existing = set()
     for page in results["results"]:
         props = page["properties"]
@@ -19,7 +11,8 @@ def get_existing_assignments():
             existing.add(name[0]["text"]["content"])
     return existing
 
-def add_assignment(assignment_name, course_name, due_date, status):
+def add_assignment(notion_token, notion_database_id, assignment_name, course_name, due_date, status):
+    notion = Client(auth=notion_token)
     properties = {
         "Assignment Name": {
             "title": [{"text": {"content": assignment_name}}]
@@ -36,16 +29,18 @@ def add_assignment(assignment_name, course_name, due_date, status):
             "date": {"start": due_date}
         }
     notion.pages.create(
-        parent={"database_id": NOTION_DATABASE_ID},
+        parent={"database_id": notion_database_id},
         properties=properties
     )
 
-def sync_assignments(assignments):
-    existing = get_existing_assignments()
+def sync_assignments(notion_token, notion_database_id, assignments):
+    existing = get_existing_assignments(notion_token, notion_database_id)
     new_count = 0
     for a in assignments:
         if a["assignment_name"] not in existing:
             add_assignment(
+                notion_token,
+                notion_database_id,
                 a["assignment_name"],
                 a["course_name"],
                 a["due_date"],

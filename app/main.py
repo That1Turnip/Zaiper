@@ -19,24 +19,52 @@ def setup():
     session["canvas_token"] = request.form.get("canvas_token")
     session["notion_token"] = request.form.get("notion_token")
     session["notion_database_id"] = request.form.get("notion_database_id")
-
-    os.environ["CANVAS_API_TOKEN"] = session["canvas_token"]
-    os.environ["CANVAS_BASE_URL"] = "https://kettering.instructure.com"
-    os.environ["NOTION_TOKEN"] = session["notion_token"]
-    os.environ["NOTION_DATABASE_ID"] = session["notion_database_id"]
-
     return redirect(url_for("dashboard"))
 
 @app.route("/dashboard", methods=["GET"])
 def dashboard():
-    assignments = get_all_assignments()
+    canvas_token = session.get("canvas_token")
+    notion_token = session.get("notion_token")
+    notion_database_id = session.get("notion_database_id")
+
+    if not canvas_token or not notion_token or not notion_database_id:
+        return redirect(url_for("index"))
+
+    try:
+        assignments = get_all_assignments(
+            canvas_token,
+            "https://kettering.instructure.com"
+        )
+    except Exception as e:
+        assignments = []
+        print(f"Canvas error: {e}")
+
     return render_template("dashboard.html", assignments=assignments)
 
 @app.route("/sync", methods=["POST"])
 def sync():
-    assignments = get_all_assignments()
-    sync_assignments(assignments)
+    canvas_token = session.get("canvas_token")
+    notion_token = session.get("notion_token")
+    notion_database_id = session.get("notion_database_id")
+
+    if not canvas_token or not notion_token or not notion_database_id:
+        return redirect(url_for("index"))
+
+    try:
+        assignments = get_all_assignments(
+            canvas_token,
+            "https://kettering.instructure.com"
+        )
+        sync_assignments(notion_token, notion_database_id, assignments)
+    except Exception as e:
+        print(f"Sync error: {e}")
+
     return redirect(url_for("dashboard"))
+
+@app.route("/logout", methods=["GET"])
+def logout():
+    session.clear()
+    return redirect(url_for("index"))
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -1,38 +1,29 @@
 import requests
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
-
-CANVAS_API_TOKEN = os.getenv("CANVAS_API_TOKEN")
-CANVAS_BASE_URL = os.getenv("CANVAS_BASE_URL")
-
-headers = {
-    "Authorization": f"Bearer {CANVAS_API_TOKEN}"
-}
-
-def get_courses():
-    url = f"{CANVAS_BASE_URL}/api/v1/courses"
+def get_courses(canvas_token, canvas_base_url):
+    url = f"{canvas_base_url}/api/v1/courses"
+    headers = {"Authorization": f"Bearer {canvas_token}"}
     params = {"enrollment_state": "active", "per_page": 50}
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
     return response.json()
 
-def get_assignments(course_id):
-    url = f"{CANVAS_BASE_URL}/api/v1/courses/{course_id}/assignments"
+def get_assignments(course_id, canvas_token, canvas_base_url):
+    url = f"{canvas_base_url}/api/v1/courses/{course_id}/assignments"
+    headers = {"Authorization": f"Bearer {canvas_token}"}
     params = {"per_page": 50}
     response = requests.get(url, headers=headers, params=params)
     response.raise_for_status()
     return response.json()
 
-def get_all_assignments():
+def get_all_assignments(canvas_token, canvas_base_url):
     all_assignments = []
-    courses = get_courses()
+    courses = get_courses(canvas_token, canvas_base_url)
     for course in courses:
         if "name" not in course:
             continue
         try:
-            assignments = get_assignments(course["id"])
+            assignments = get_assignments(course["id"], canvas_token, canvas_base_url)
             for assignment in assignments:
                 all_assignments.append({
                     "course_name": course["name"],
