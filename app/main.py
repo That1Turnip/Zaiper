@@ -19,6 +19,7 @@ def setup():
     session["canvas_token"] = request.form.get("canvas_token")
     session["notion_token"] = request.form.get("notion_token")
     session["notion_database_id"] = request.form.get("notion_database_id")
+    session["canvas_base_url"] = request.form.get("canvas_base_url")
     return redirect(url_for("dashboard"))
 
 @app.route("/dashboard", methods=["GET"])
@@ -33,7 +34,7 @@ def dashboard():
     try:
         assignments = get_all_assignments(
             canvas_token,
-            "https://kettering.instructure.com"
+            session.get("canvas_base_url")
         )
     except Exception as e:
         assignments = []
@@ -53,7 +54,7 @@ def sync():
     try:
         assignments = get_all_assignments(
             canvas_token,
-            "https://kettering.instructure.com"
+            session.get("canvas_base_url")
         )
         sync_assignments(notion_token, notion_database_id, assignments)
     except Exception as e:
